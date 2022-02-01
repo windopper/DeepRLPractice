@@ -8,7 +8,10 @@ env = gym.make('CartPole-v1')
 goal_steps = 500
 
 
-def data_preparation(N, K, f, render=False):
+
+
+
+def data_preparation(N, K, f, render=True):
     game_data = []
     for i in range(N):
         print(i)
@@ -82,3 +85,6 @@ if __name__ == '__main__':
         train_model(model, training_data)
 
     data_preparation(100, 100, predictor, True)
+
+
+
