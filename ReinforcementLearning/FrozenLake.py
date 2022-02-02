@@ -19,7 +19,8 @@ register(
 
 env = gym.make("FrozenLake-v3")
 Q = np.zeros([env.observation_space.n, env.action_space.n])
-dis = 0.99
+dis = .99
+lr = 0.85
 
 num_episodes = 2000
 state = env.reset()
@@ -40,20 +41,25 @@ for i in range(num_episodes):
 
         # 두개의 방법이 존재 노이즈 방법이 이 경우에서 더 높은 성공 확률을 보임
 
-        # # 액션 값에 노이즈 추가
-        # action = np.argmax(Q[state, :] + np.random.randn(1, env.action_space.n) / (i+1))
+        # 액션 값에 따른 기대 보상에 노이즈를 추가하여 다음 액션을 정함
+        action = np.argmax(Q[state, :] + np.random.randn(1, env.action_space.n) / (i+1))
 
-        # e-greedy 에 의하여 선택되는 action
-        if np.random.rand(1) < e:
-            action = env.action_space.sample()
-        else:
-            action = np.argmax(Q[state, :])
+        # # e-greedy 에 의하여 선택되는 action
+        # if np.random.rand(1) < e:
+        #     action = env.action_space.sample()
+        # else:
+        #     action = np.argmax(Q[state, :])
 
         new_state, reward, done, info = env.step(action)
 
         # 모든 가능한 Action을 기반으로 next_state의 Q 최댓값을 구하여 현재 보상에 더함
-        # decay rate를 사용하여 미래에 받게 되는 보상을
-        Q[state, action] = reward + dis * np.max(Q[new_state, :])
+        # decay rate를 사용하여 미래에 받게 되는 보상의 비율을 조정함
+
+        # 이전 리워드를 반영하면서 '고집'이 세짐. 랜덤
+        Q[state, action] = (1-lr) * Q[state, action] + lr * (reward + dis * np.max(Q[new_state, :]))
+
+        #
+        # Q[state, action] = reward + dis * np.max(Q[new_state, :])
 
         rAll += reward # 받은 보상
         state = new_state # state update
